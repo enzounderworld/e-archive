@@ -6,6 +6,9 @@ from config import discordpy_token , e_channel_id , e_archive_channel_id
 # アクセストークン
 TOKEN = discordpy_token
 
+E_CHANNEL_ID = e_channel_id
+E_ARCHIVE_CHANNEL_ID = e_archive_channel_id
+
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
 
@@ -22,17 +25,15 @@ async def on_message(message):
     if message.author.bot:
         return
     # 
-    if message.channel.id == e_channel_id:
+    if message.channel.id == E_CHANNEL_ID:
         # リアクション:ii:をつける
         emoji = client.get_emoji(554315588453924874)
         await message.add_reaction(emoji)
 
         if 'twitter.com' in message.content:
-            e_archive_channel = client.get_channel(e_archive_channel_id)
+            e_archive_channel = client.get_channel(E_ARCHIVE_CHANNEL_ID)
             msg = ('twitter_良い',message.content)
             await e_archive_channel.send(msg)
-
-
 
 # Botの起動とDiscordサーバーへの接続
 client.run(TOKEN)
