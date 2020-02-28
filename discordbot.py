@@ -1,13 +1,21 @@
 # インストールした discord.py を読み込む
-import discord
-
-from config import discordpy_token , e_channel_id , e_archive_channel_id
+import discord, json
+from requests_oauthlib import OAuth1Session
+from config import discordpy_token , e_channel_id , e_archive_channel_id, consumer_key, consumer_secret, access_token, access_token_secret
 
 # アクセストークン
 TOKEN = discordpy_token
 
 E_CHANNEL_ID = e_channel_id
 E_ARCHIVE_CHANNEL_ID = e_archive_channel_id
+
+CK = consumer_key
+CS = consumer_secret
+AT = access_token
+ATS = access_token_secret
+
+# twitterAPI認証
+twitter = OAuth1Session(CK, CS, AT, ATS)
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
@@ -24,16 +32,24 @@ async def on_message(message):
     # メッセージ送信者がBotだった場合は無視する
     if message.author.bot:
         return
-    # 
-    if message.channel.id == E_CHANNEL_ID:
+
+    if message.channel.i == E_CHANNEL_ID:
         # リアクション:ii:をつける
         emoji = client.get_emoji(554315588453924874)
         await message.add_reaction(emoji)
 
-        if 'twitter.com' in message.content:
-            e_archive_channel = client.get_channel(E_ARCHIVE_CHANNEL_ID)
-            msg = ('twitter_良い',message.content)
-            await e_archive_channel.send(msg)
+        e_archive_channel = client.get_channel(E_ARCHIVE_CHANNEL_ID)
+        tweetId = '1231419383605420032'
+        url = 'https://api.twitter.com/1.1/statuses/show.json?id=' + tweetId
+        req = twitter.get(url)
+
+        if req.status_code == 200:
+            result = json.loads(req.text)
+            archiveText = result['user']['name'] + '\n' + '@' + result['user']['screen_name'] + '\n' + result['text'] + '\n' + result['created_at']
+            await e_archive_channel.send(archiveText)
+        else:
+            await message.channel.send('ツイート取得に失敗しました')
 
 # Botの起動とDiscordサーバーへの接続
 client.run(TOKEN)
+
