@@ -1,5 +1,9 @@
 # インストールした discord.py を読み込む
-import discord, json
+import discord
+import json
+import re
+
+from urllib import parse
 from requests_oauthlib import OAuth1Session
 from config import discordpy_token , e_channel_id , e_archive_channel_id, consumer_key, consumer_secret, access_token, access_token_secret
 
@@ -38,9 +42,14 @@ async def on_message(message):
         emoji = client.get_emoji(554315588453924874)
         await message.add_reaction(emoji)
 
+        msg = message.content
         e_archive_channel = client.get_channel(E_ARCHIVE_CHANNEL_ID)
-        if 'twitter.com' in message.content:
-            tweetId = '1231419383605420032'
+        if 'twitter.com' in msg:
+
+            pattern = '/status/'
+            split_list = re.split(pattern, msg)
+            tweetId = re.search(r'\d+', split_list[1]).group()
+
             url = 'https://api.twitter.com/1.1/statuses/show.json?id=' + tweetId
             req = twitter.get(url)
             if req.status_code == 200:
