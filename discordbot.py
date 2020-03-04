@@ -43,6 +43,8 @@ async def on_message(message):
         await message.add_reaction(emoji)
 
         msg = message.content
+        attachments = message.attachments
+    
         e_archive_channel = client.get_channel(E_ARCHIVE_CHANNEL_ID)
         if 'twitter.com' in msg:
 
@@ -58,6 +60,11 @@ async def on_message(message):
                 await e_archive_channel.send(archiveText)
             else:
                 await message.channel.send('ツイート取得に失敗しました')
+    
+    if attachments:
+        for attachment in attachments:
+            file_attachment = await attachment.to_file()
+            await e_archive_channel.send(file=file_attachment)
 
 # Botの起動とDiscordサーバーへの接続
 client.run(TOKEN)
