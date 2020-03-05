@@ -2,8 +2,12 @@
 import discord
 import json
 import re
+import os
+import shutil
+import urllib
+import datetime
 
-from urllib import parse
+
 from requests_oauthlib import OAuth1Session
 from config import discordpy_token , e_channel_id , e_archive_channel_id, consumer_key, consumer_secret, access_token, access_token_secret
 
@@ -23,6 +27,12 @@ twitter = OAuth1Session(CK, CS, AT, ATS)
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
+media_dir = r'C:\e-archive\media'
+
+def dir_check():
+    if not os.path.isdir(media_dir):
+        os.mkdir(media_dir)
+
 
 # 起動時に動作する処理
 @client.event
@@ -58,13 +68,28 @@ async def on_message(message):
                 result = json.loads(req.text)
                 archiveText = result['user']['name'] + '\n' + '@' + result['user']['screen_name'] + '\n' + result['text'] + '\n' + result['created_at']
                 await e_archive_channel.send(archiveText)
+
+                media_list = result['extended_entities']['media']
+                dir_check()
+
+                for media in media_list:
+                    image = media['media_url']
+                    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+                    filepath = media_dir + r"\image_" + timestamp + '.jpg'
+                    # 画像をダウンロード
+                    with open(filepath, 'wb') as f:
+                        img = urllib.request.urlopen(image).read()
+                        f.write(img)
+                        # 画像をdiscordに送信
+                        await e_archive_channel.send(file=discord.File(filepath))
+
             else:
                 await message.channel.send('ツイート取得に失敗しました')
     
-    if attachments:
-        for attachment in attachments:
-            file_attachment = await attachment.to_file()
-            await e_archive_channel.send(file=file_attachment)
+        if attachments:
+            for attachment in attachments:
+                file_attachment = await attachment.to_file()
+                await e_archive_channel.send(file=file_attachment)
 
 # Botの起動とDiscordサーバーへの接続
 client.run(TOKEN)
