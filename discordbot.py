@@ -9,29 +9,17 @@ import datetime
 
 
 from requests_oauthlib import OAuth1Session
-from config import discordpy_token , e_channel_id , e_archive_channel_id, consumer_key, consumer_secret, access_token, access_token_secret
-
-# アクセストークン
-TOKEN = discordpy_token
-
-E_CHANNEL_ID = e_channel_id
-E_ARCHIVE_CHANNEL_ID = e_archive_channel_id
-
-CK = consumer_key
-CS = consumer_secret
-AT = access_token
-ATS = access_token_secret
+from config import DISCORDPY_TOKEN , E_CHANNEL_ID , E_ARCHIVE_CHANNEL_ID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, MEDIA_DIR
 
 # twitterAPI認証
-twitter = OAuth1Session(CK, CS, AT, ATS)
+twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
-media_dir = r'C:\e-archive\media'
 
 def dir_check():
-    if not os.path.isdir(media_dir):
-        os.mkdir(media_dir)
+    if not os.path.isdir(MEDIA_DIR):
+        os.mkdir(MEDIA_DIR)
 
 
 # 起動時に動作する処理
@@ -75,7 +63,7 @@ async def on_message(message):
                 for media in media_list:
                     image = media['media_url']
                     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-                    filepath = media_dir + r"\image_" + timestamp + '.jpg'
+                    filepath = MEDIA_DIR + r"\image_" + timestamp + '.jpg'
                     # 画像をダウンロード
                     with open(filepath, 'wb') as f:
                         img = urllib.request.urlopen(image).read()
@@ -86,11 +74,12 @@ async def on_message(message):
             else:
                 await message.channel.send('ツイート取得に失敗しました')
     
+        #画像の直貼りの場合
         if attachments:
             for attachment in attachments:
                 file_attachment = await attachment.to_file()
                 await e_archive_channel.send(file=file_attachment)
 
 # Botの起動とDiscordサーバーへの接続
-client.run(TOKEN)
+client.run(DISCORDPY_TOKEN)
 
