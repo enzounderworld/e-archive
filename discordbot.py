@@ -9,7 +9,7 @@ import datetime
 
 
 from requests_oauthlib import OAuth1Session
-from config import DISCORDPY_TOKEN , E_CHANNEL_ID , E_ARCHIVE_CHANNEL_ID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, MEDIA_DIR
+from config import DISCORDPY_TOKEN , E_CHANNEL_ID , E_ARCHIVE_CHANNEL_ID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, MEDIA_DIR, FILEPATH
 
 # twitterAPI認証
 twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -63,7 +63,7 @@ async def on_message(message):
                 for media in media_list:
                     image = media['media_url']
                     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-                    filepath = MEDIA_DIR + r"\image_" + timestamp + '.jpg'
+                    filepath = FILEPATH + timestamp + '.jpg'
                     # 画像をダウンロード
                     with open(filepath, 'wb') as f:
                         img = urllib.request.urlopen(image).read()
