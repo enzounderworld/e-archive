@@ -9,26 +9,22 @@ import datetime
 
 
 from requests_oauthlib import OAuth1Session
-from config import DISCORDPY_TOKEN, E_CHANNEL_ID, E_ARCHIVE_CHANNEL_ID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, MEDIA_DIR, FILEPATH
+from config import DISCORDPY_TOKEN , E_CHANNEL_ID , E_ARCHIVE_CHANNEL_ID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, MEDIA_DIR, FILEPATH
 
 # twitterAPI認証
-twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET,
-                        ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
 # 接続に必要なオブジェクトを生成
 client = discord.Client()
-
 
 def dir_check():
     if not os.path.isdir(MEDIA_DIR):
         os.mkdir(MEDIA_DIR)
 
-
 def find_url(msg):
     pattern = r'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+'
     url_list = re.findall(pattern, msg)
     return url_list
-
 
 def is_valid_url(url):
     try:
@@ -39,7 +35,7 @@ def is_valid_url(url):
         return False
 
 
-async def tw(url, archive_ch):
+async def tw(url , archive_ch):
     pattern = '/status/'
     split_list = re.split(pattern, url)
     tweetId = re.search(r'\d+', split_list[1]).group()
@@ -48,19 +44,7 @@ async def tw(url, archive_ch):
     req = twitter.get(api_url)
     if req.status_code == 200:
         result = json.loads(req.text)
-        archiveText = result['user']['name'] + '\n' + '@' + \
-            result['user']['screen_name'] + '\n' + \
-            result['text'] + '\n' + result['created_at']
-        url_in_tweet_list = find_url(archiveText)
-        for url in url_in_tweet_list:
-            if not is_valid_url(url):
-                print('無効なURL')
-                continue
-            _archiveText = archiveText.strip(url)
-            if 'twitter.com' in url:
-                await tw(url, archive_ch)
-            else:
-                await archive_ch.send(url)
+        archiveText = result['user']['name'] + '\n' + '@' + result['user']['screen_name'] + '\n' + result['text'] + '\n' + result['created_at']
         await archive_ch.send(archiveText)
 
         if result.get('extended_entities') is not None:
@@ -76,7 +60,7 @@ async def tw(url, archive_ch):
                     img = urllib.request.urlopen(image).read()
                     f.write(img)
                     # 画像をdiscordに送信
-                    await archive_ch.send(file=discord.File(filepath))
+                    await archive_ch.send(file=discord.File(filepath))   
 
 
 # 起動時に動作する処理
@@ -99,7 +83,7 @@ async def on_message(message):
 
         msg = message.content
         attachments = message.attachments
-
+    
         archive_ch = client.get_channel(E_ARCHIVE_CHANNEL_ID)
 
         url_list = find_url(msg)
@@ -110,12 +94,13 @@ async def on_message(message):
                 continue
 
             if 'twitter.com' in url:
-                await tw(url, archive_ch)
+                await tw(url , archive_ch)
             else:
-                # URL直貼りの場合
+                #URL直貼りの場合
                 await archive_ch.send(url)
 
-        # 画像の直貼りの場合
+        
+        #画像の直貼りの場合
         if attachments:
             for attachment in attachments:
                 file_attachment = await attachment.to_file()
@@ -123,3 +108,4 @@ async def on_message(message):
 
 # Botの起動とDiscordサーバーへの接続
 client.run(DISCORDPY_TOKEN)
+
